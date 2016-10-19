@@ -1,3 +1,9 @@
+/** ENCABEZADOS
+*@file  PID_i.c
+*@brief Experimento 4. IE 0624 Laboratorio de Microcontroladores. Escrito orignalmente en el IDE de Arduino
+*@autor Andrés Quesada Acosta, B04927. José Pablo Martínez Hernández, B34024.
+*@date  26 de octubre del 2016.
+*/
 #include <avr/pgmspace.h>
 
 //CONSTANTES
@@ -13,7 +19,7 @@ long tInit;
 long tSerial;
 
 //Valor Deseado
-float Target = 26;
+float Target = 20;
 
 //Output
 float dutycycle;
@@ -30,37 +36,10 @@ float Kd;
 long LastTime;
 long SampleTime;
 long timeOutInt;
-
-
-//Tabla guardada en memoria de programa del Arduino (FLASH)
-//PROGMEM  prog_uint16_t ntc[21][2]  = { 
-  //{861,0},
-  //{778,10},
-  //{678,20},
-  //{570,30},
-  //{463,40},
-  //{366,50},  
-  //{285,60},  
-  //{219,70},
-  //{168,80},
-  //{128,90},
-  //{99,100},
-  //{77,110},
-  //{60,120},
-  //{47,130},
-  //{38,140},
-  //{30,150},  
-  //{24,160},  
-  //{20,170},
-  //{16,180},
-  //{14,190},
-  //{11,200},
-//};
- 
  
 void setup() 
 {
-  //Empiezo comunicacion serie a 19200(maxima velocidad de StampPlot)
+  //Empiezo comunicacion serie a 115200
   Serial.begin(115200); 
   delay(10);
   //Configuro el pin 9 como salida (PWM)
@@ -113,6 +92,7 @@ void loop()
   //  tInit=millis();  
   //}
   //-------------
+
   
   //----------------------------------------------------
   //CONTROL PID
@@ -178,107 +158,7 @@ void loop()
     Serial.print(Integral);
     Serial.print("; d= ");
     Serial.println(Derivative);    
-    //Serial.print(13,BYTE);
     
   }
   //----------------------------------------------------         
 }
-
-// Funcion de conversion lectura ADC a grados mediante una tabla guardada en memoria de programa del micro
-// para no gastar memoria RAM.
-//float calcTemp(uint16_t myADC)
-//{
-  
-  //Recorro la tabla de valores del sensor NTC 
-  //for(int i=0; i<21;i++)
-  //{
-      //No extrapola, si es menor se queda con el primer valor de la tabla
-      //if (myADC>=pgm_read_word(&(ntc[0][0])))
-      //{
-        //temp=pgm_read_word(&(ntc[0][1]));    
-        //break;
-     //}
-      //No extrapola, si es mayor se queda con el ultimo valor de la tabla
-      //if (myADC<=pgm_read_word(&(ntc[20][0])))
-      //{
-        //temp=pgm_read_word(&(ntc[20][1]));  
-        //break;  
-      //}
-
-      //uint16_t actualADC=pgm_read_word(&(ntc[i][0])); 
-      //if (myADC>=actualADC)
-     //{
-        //if (i>0)
-        //{
-          //uint16_t previousADC=pgm_read_word(&(ntc[i-1][0]));  
-          //uint16_t previousTemp=pgm_read_word(&(ntc[i-1][1]));
-          //uint16_t actualTemp=pgm_read_word(&(ntc[i][1]));
-          
-         // temp=( ((float)myADC - (float)previousADC) * ((float)actualTemp - (float)previousTemp) / ((float)actualADC - (float)previousADC) )+previousTemp;
-
-        //  break;
-      //  }
-    //  }  
-  //}  
-  
-  //return (temp);
-  
-//}
-
-
-//void config_StampPlot()
-//{
-  //----------------------------------------------------------
-  //CONFIGURACION STAMP PLOT LITE
-  //----------------------------------------------------------
-  //Titulo de la ventana (FORM)
-  //Serial.print("!TITL Arduino Power!");
-  //Serial.print(13,BYTE);
-  //Titulo de usuario (STATUS)
-  //Serial.print("!USRS Control PID");
-  //Serial.print(13,BYTE);  
-  //Valor maximo del eje Y
-  //Serial.print("!AMAX 62");
-  //Serial.print(13,BYTE);
-  //Valor minimo del eje Y
-  //Serial.print("!AMIN 57");
-  //Serial.print(13,BYTE);
-  //Valor maximo de tiempo
-  //Serial.print("!TMAX 500");
-  //Serial.print(13,BYTE);
-  //Configuro el numero de puntos
-  //Serial.print("!PNTS 8000");
-  //Serial.print(13,BYTE);  
-  //Ayadir Tiempo en la lista de mensajes
-  //Serial.print("!TSMP OFF");
-  //Serial.print(13,BYTE);  
-  //Plot ON
-  //Serial.print("!PLOT ON");
-  //Serial.print(13,BYTE);    
-  //Borra el valor Max y Min almacenado despues del RESET
-  //Serial.print("!CLMM");
-  //Serial.print(13,BYTE);  
-  //Limpio la lista de mensajes
-  //Serial.print("!CLRM");
-  //Serial.print(13,BYTE);
-  
-  //Borro el fichero stampdat.txt
-  //Serial.print("!DELD");
-  //Serial.print(13,BYTE);
-  //Borro el fichero stampmsg.txt
-  //Serial.print("!DELM");
-  //Serial.print(13,BYTE);  
-  //Salvar datos Analogicos y digitales en stampdat.txt
-  //Serial.print("!SAVD ON");
-  //Serial.print(13,BYTE);  
-  //Salvar Mensajes en stampmsg.txt
-  //Serial.print("stampmsg.txt");
-  //Serial.print(13,BYTE);    
-  
-  //RESET DEL GRAFICO PARA COMENZAR A PLOTEAR
-  //Serial.print("!RSET");
-  //Serial.print(13,BYTE);  
-  //----------------------------------------------------------
-  
-//}
-
