@@ -7,8 +7,8 @@
 #include <avr/pgmspace.h>
 
 //CONSTANTES
-#define cte_kp  30.0   //300
-#define cte_ki  1.0     //5.0
+#define cte_kp  40.0   //300
+#define cte_ki  5.0     //5.0
 #define cte_kd  5.0
 #define Margin_Int 0.9
 //#define target1  25.0    //60
@@ -19,7 +19,10 @@ long tInit;
 long tSerial;
 
 //Valor Deseado
-float Target = 20;
+float Target = 27;
+
+//Pin de relay
+int rele = 11;
 
 //Output
 float dutycycle;
@@ -44,6 +47,8 @@ void setup()
   delay(10);
   //Configuro el pin 9 como salida (PWM)
   pinMode(9,OUTPUT);
+  //Configuro el pin 11 como salida (Relay)
+  pinMode(rele,OUTPUT);
   
   //Capturo tiempos para el control de mi programa.
   tInit=millis();
@@ -73,11 +78,11 @@ void loop()
   int lectura = analogRead(0);
   float temp = 0;
   
-  for (int i=0; i<20;i++){
+  for (int i=0; i<40;i++){
     temp = lectura * 5.0/1024 + temp ;  //Función que transforma mi lectura del ADC en grados usando una tabla guardad en memoria FLASH
   }
   
-  temp/=20;
+  temp/=40;
   float Input = (temp)*100;
   
   // Cambio el SetPoint a target1 y target2 cada 120 segundos
@@ -114,7 +119,6 @@ void loop()
     //Esto es para evitar saturar el control
     if ( (abs(error)<=Margin_Int))
     {
-      
       if (timeOutInt++ >10)        //Si se cumple durante X veces el SampleTime (delay de la parte integral)
       {
         Integral+=(float)Ki*(float)error;
@@ -129,19 +133,43 @@ void loop()
     //Parte derivativa
     Derivative=(float)Kd*((float)error-(float)prev_error);
     //----------------------------------------------------------------
+
+    float sume = 0;
+    
+    for (int j=0; j<100;j++){
+    sume = error + sume ;  //Función que transforma mi lectura del ADC en grados usando una tabla guardad en memoria FLASH
+     }  
+    float promerror = sume/100;
+  
+    if ( promerror> 0.5 ){
     dutycycle=(int)Proportional+ (int)Integral + (int)Derivative;
 
     //Limites de la salida. PWM de Arduino 0-255 (8 bits).
-    if (dutycycle <0)
-    {
+    if (dutycycle <0){
       dutycycle=0;
-    }else if (dutycycle>255)
-    {
+    }else if (dutycycle>255){
       dutycycle=255;
     }  
-   
-    //Actualizo salida
-    analogWrite(9,(int)dutycycle);
+     //Actualizo salida
+     analogWrite(9,(int)dutycycle);
+    }else{
+      dutycycle=0;
+      //Actualizo salida
+      analogWrite(9,(int)dutycycle);
+    }
+
+    int k = 0;
+    if ( promerror<= -1 ){
+    k++;
+    if (k <=10){
+      digitalWrite(rele,HIGH);
+    }else{
+      digitalWrite(rele,LOW);}
+      }
+  
+    else{
+     digitalWrite(rele,LOW); 
+    }
     
     //Mando datos a Stamplot
     Serial.print("Temperatura= ");
@@ -151,13 +179,15 @@ void loop()
     Serial.print("; D= ");
     Serial.print(dutycycle);
     Serial.print("; Error= ");
-    Serial.print(error);
-    Serial.print("; p= ");
-    Serial.print(Proportional);
-    Serial.print("; i= ");
-    Serial.print(Integral);
-    Serial.print("; d= ");
-    Serial.println(Derivative);    
+    Serial.print(promerror);
+    Serial.print("; Rele= ");
+    Serial.println(bitRead(PIND,rele));
+    //Serial.print("; p= ");
+    //Serial.print(Proportional);
+    //Serial.print("; i= ");
+    //Serial.print(Integral);
+    //Serial.print("; d= ");
+    //Serial.println(Derivative);    
     
   }
   //----------------------------------------------------         
