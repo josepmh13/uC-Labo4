@@ -1,7 +1,7 @@
 /** ENCABEZADOS
 *@file  PID_i.c
 *@brief Experimento 4. IE 0624 Laboratorio de Microcontroladores. Escrito orignalmente en el IDE de Arduino
-*@autor Andrés Quesada Acosta, B04927. José Pablo Martínez Hernández, B34024.
+*@autor AndrÃ©s Quesada Acosta, B04927. JosÃ© Pablo MartÃ­nez HernÃ¡ndez, B34024.
 *@date  26 de octubre del 2016.
 */
 #include <avr/pgmspace.h>
@@ -18,8 +18,9 @@
 long tInit;
 long tSerial;
 
-//Valor Deseado
-float Target = 27;
+// Valor deseado
+int Target;
+int TargetP;
 
 //Pin de relay
 int rele = 11;
@@ -72,33 +73,27 @@ void setup()
 }
 
 void loop() 
-{
-  
-  //Recojo 20 veces el dato del sensor y hago la media
-  int lectura = analogRead(0);
+{   
+   while (Serial.available()>0);
+   int   TargetA = Serial.parseInt();
+   if (TargetA> 0){
+   Target = TargetA;
+   TargetP=TargetA;
+   }
+   else {Target=TargetP;}
+   
+  //Recojo 40 veces el dato del sensor y hago la media
+  int lectura = analogRead(1);
   float temp = 0;
   
   for (int i=0; i<40;i++){
-    temp = lectura * 5.0/1024 + temp ;  //Función que transforma mi lectura del ADC en grados usando una tabla guardad en memoria FLASH
+    temp = lectura * 5.0/1024 + temp ;  //Funcion que transforma mi lectura del ADC en grados usando una tabla guardad en memoria FLASH
   }
   
   temp/=40;
   float Input = (temp)*100;
   
-  // Cambio el SetPoint a target1 y target2 cada 120 segundos
-  
-  //--------------
-  //Target=target1;
-  //long time=(millis()-tInit)/1000;
-  //if ((time>60) && (time<120) )
-  //{
-  //  Target=target2;  
-  //}else if ( time>120 ){
-  //  tInit=millis();  
-  //}
-  //-------------
 
-  
   //----------------------------------------------------
   //CONTROL PID
   //Hago los calculos de manera periodica
@@ -137,7 +132,7 @@ void loop()
     float sume = 0;
     
     for (int j=0; j<100;j++){
-    sume = error + sume ;  //Función que transforma mi lectura del ADC en grados usando una tabla guardad en memoria FLASH
+    sume = error + sume ;  //FunciÃ³n que transforma mi lectura del ADC en grados usando una tabla guardad en memoria FLASH
      }  
     float promerror = sume/100;
   
@@ -159,7 +154,7 @@ void loop()
     }
 
     int k = 0;
-    if ( promerror<= -1 ){
+    if ( promerror<= -0.5 ){
     k++;
     if (k <=10){
       digitalWrite(rele,HIGH);
@@ -170,25 +165,31 @@ void loop()
     else{
      digitalWrite(rele,LOW); 
     }
-    
+  
     //Mando datos a Stamplot
-    Serial.print("Temperatura= ");
-    Serial.print(Input);
-    //Serial.print(13,BYTE);
-    
-    Serial.print("; D= ");
+    Serial.print(" Valor deseado= ");
+    Serial.print(Target);
+    Serial.print(',');
+    Serial.print(" Temperatura= ");
+    Serial.println(Input);
+    Serial.print(',');
+    Serial.print(13,BYTE);    
+   Serial.print("; D= ");
     Serial.print(dutycycle);
+    Serial.print(',');
     Serial.print("; Error= ");
-    Serial.print(promerror);
-    Serial.print("; Rele= ");
-    Serial.println(bitRead(PIND,rele));
+    Serial.println(promerror);
+    
+//    Serial.print("; Rele= ");
+//    Serial.println(bitRead(PIND,rele));
     //Serial.print("; p= ");
     //Serial.print(Proportional);
     //Serial.print("; i= ");
     //Serial.print(Integral);
     //Serial.print("; d= ");
-    //Serial.println(Derivative);    
-    
-  }
-  //----------------------------------------------------         
+    //Serial.println(Derivative);   
+     }
+   //Valor Deseado
+ 
 }
+
